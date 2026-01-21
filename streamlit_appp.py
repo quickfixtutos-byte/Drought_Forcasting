@@ -182,7 +182,7 @@ TIME_STEPS = 12
 # Color maps and nice ranges per type
 # -------------------------------
 cmap_dict = {
-    "Drought": "inferno",
+    "Drought": "YlOrRd",
     "Normal": "viridis",
     "Wet": "Blues",
     "Uncertainty": "Greys"
@@ -224,37 +224,48 @@ def force_complete_prediction(real_map, pred_map):
 # -------------------------------
 # Plot side-by-side with publication-ready legends
 # -------------------------------
+def robust_minmax(arr, low=2, high=98):
+    vmin = np.nanpercentile(arr, low)
+    vmax = np.nanpercentile(arr, high)
+    if vmin == vmax:
+        vmax = vmin + 1e-6
+    return vmin, vmax
+
 def plot_real_pred(real_map, pred_map, title):
     st.markdown(f"### {title}")
 
-    pred_vis = force_complete_prediction(real_map, pred_map)
+    cmap = cmap_dict.get(title, "inferno")
 
-    # Choose colormap
+    # 🔥 AUTO-SCALE EACH MAP FOR VISUALIZATION
+    real_vmin, real_vmax = robust_minmax(real_map)
+    pred_vmin, pred_vmax = robust_minmax(pred_map)
+
+     # Choose colormap
     cmap = cmap_dict.get(title, "inferno")
     vmin, vmax = vmin_dict.get(title, 0.0), vmax_dict.get(title, 1.0)
 
     col1, col2 = st.columns(2)
 
+    pred_vis = force_complete_prediction(real_map, pred_map)
     # Real Map
     with col1:
         fig1 = px.imshow(
             real_map,
             color_continuous_scale=cmap,
             origin="upper",
-            zmin=vmin,
-            zmax=vmax,
+            zmin=real_vmin,
+            zmax=real_vmax,
             labels={"color": f"{title} Intensity"},
         )
         fig1.update_layout(
-            title="Real Map",
+            title=f"Real Map (scaled {real_vmin:.3f}–{real_vmax:.3f})",
             xaxis=dict(showticklabels=False),
             yaxis=dict(showticklabels=False),
             margin=dict(l=0, r=0, t=30, b=0),
             height=400,
         )
         st.plotly_chart(fig1, use_container_width=True)
-
-    # Predicted / Completed Map
+        # Predicted / Completed Map
     with col2:
         fig2 = px.imshow(
             pred_vis,
@@ -272,6 +283,10 @@ def plot_real_pred(real_map, pred_map, title):
             height=400,
         )
         st.plotly_chart(fig2, use_container_width=True)
+
+    
+
+   
 
 # -------------------------------
 # Helper: Get map array from dataset
