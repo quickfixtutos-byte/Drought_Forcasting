@@ -70,6 +70,18 @@ with st.sidebar:
     st.header("Controls")
     time_idx = st.slider("Select starting time index", 0, data.shape[0] - 12, 0)
     map_type = st.radio("Map type", ["Drought", "Normal", "Wet", "Uncertainty", "All"])
+# Get datetime at selected index
+current_time = ds.time.values[time_idx]
+
+# Convert to pandas Timestamp (easy formatting)
+current_time = np.datetime64(current_time)
+import pandas as pd
+
+ts = pd.to_datetime(current_time)
+year = ts.year
+month = ts.month
+month_name = ts.strftime("%B")
+st.info(f"📅 Visualizing: **{month_name} {year}**")
 
 # -------------------------------
 # Model Definition
@@ -105,6 +117,7 @@ def load_model(weights_path="conv_lstm_final.h5"):
     return model
 
 model = load_model()
+
 
 # -------------------------------
 # Prepare Input Sequence
