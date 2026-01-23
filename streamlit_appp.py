@@ -8,6 +8,7 @@ from tensorflow.keras.layers import ConvLSTM2D, Conv2D, Input
 from tensorflow.keras.models import Model
 from scipy.ndimage import distance_transform_edt, gaussian_filter
 from PIL import Image  # for loading your screenshot
+import pandas as pd
 
 
 
@@ -75,13 +76,9 @@ current_time = ds.time.values[time_idx]
 
 # Convert to pandas Timestamp (easy formatting)
 current_time = np.datetime64(current_time)
-import pandas as pd
 
 ts = pd.to_datetime(current_time)
-year = ts.year
-month = ts.month
-month_name = ts.strftime("%B")
-st.info(f"📅 Visualizing: **{month_name} {year}**")
+
 
 # -------------------------------
 # Model Definition
@@ -219,7 +216,7 @@ vmax_dict = {
 # -------------------------------
 # Visual completion function
 # -------------------------------
-def force_complete_prediction(real_map, pred_map):
+def complete_prediction(real_map, pred_map):
     """
     Blend the real map with prediction for visual completion.
     """
@@ -259,7 +256,7 @@ def plot_real_pred(real_map, pred_map, title):
 
     col1, col2 = st.columns(2)
 
-    pred_vis = force_complete_prediction(real_map, pred_map)
+    pred_vis = complete_prediction(real_map, pred_map)
     # Real Map
     with col1:
         fig1 = px.imshow(
@@ -341,6 +338,9 @@ else:
 
 
 
+st.write("REAL MAP shape:", real_map.shape)
+st.write("PRED MAP shape:", pred_map.shape)
+st.write("Dataset spatial dims:", ds.dims)
 
 
 
